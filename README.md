@@ -1,5 +1,5 @@
 # InstagramAdKiller
-Instagram AdKiller removes promoted posts from official Instagram app for Android
+Instagram AdKiller removes sponsored posts from official Instagram app for Android
 
 ## Download:
 https://repo.xposed.info/module/ru.xkip.noad.instagram
