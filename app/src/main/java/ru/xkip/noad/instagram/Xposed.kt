@@ -13,6 +13,7 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import java.lang.reflect.Modifier
+// import kotlin.reflect.KClass
 
 
 class Xposed : IXposedHookLoadPackage {
@@ -23,6 +24,7 @@ class Xposed : IXposedHookLoadPackage {
 		val abc = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 		val markedViews = mutableSetOf<View>()
+		// val hookedClasses = mutableSetOf<Class<*>>()
 /*
 		var OnLayoutChangeListener: View.OnLayoutChangeListener =
 			View.OnLayoutChangeListener { vw, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
@@ -304,6 +306,9 @@ class Xposed : IXposedHookLoadPackage {
 
 	fun hookSponsoredPost(clazz: Class<*>, required: Boolean) {
 		try {
+			// if (!hookedClasses.add(clazz)) {
+				// return
+			// }
 			val methods = XposedHelpers.findMethodsByExactParameters(
 				clazz,
 				View::class.java,
@@ -314,6 +319,7 @@ class Xposed : IXposedHookLoadPackage {
 				Any::class.java
 			)
 			if(methods.isNotEmpty()) {
+				// Log.i(tag, "hookSponsoredPost - ${clazz.name} - ${methods.size} methods")
 				XposedBridge.hookMethod(methods[0], object : XC_MethodHook() {
 					@Throws(Throwable::class)
 					override fun afterHookedMethod(param: MethodHookParam?) {
@@ -324,9 +330,9 @@ class Xposed : IXposedHookLoadPackage {
 							try {
 								if ( if (bestMedia != null) bestMedia == obj::class.java else medias.contains(obj::class.java)) {
 									Log.w(tag, "Method called: ${clazz.name} ${methods[0].name} (${obj::class.java.name} $obj)")
-									val view = param.args[1] as View
+									val view = param.args[1] as View?
 
-									if (sponsoredFieldName == null) {
+									if (sponsoredFieldName == null && view != null) {
 										for (f in obj::class.java.fields) {
 											var v = f.get(obj)
 											// analyze feed.fields
@@ -354,7 +360,7 @@ class Xposed : IXposedHookLoadPackage {
 									}
 
 									var hide = false
-									if (sponsoredFieldName != null ) {
+									if (sponsoredFieldName != null && view != null) {
 										val adCheck = XposedHelpers.getObjectField(obj, sponsoredFieldName)
 										if (adCheck != null) {
 											Log.w(
@@ -387,7 +393,9 @@ class Xposed : IXposedHookLoadPackage {
 										*/
 									}
 
-									handleView2Real(view, hide)
+									if (view != null) {
+										handleView2Real(view, hide)
+									}
 /*
 									if (adCheck != null) {
 										if (view.visibility != View.GONE) {
